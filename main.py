@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter.font import *
+import mysql.connector
 
 window = Tk()
 window.title("مدیریت رستوران")
@@ -11,6 +12,44 @@ window.columnconfigure(0, weight=1)
 window.columnconfigure(1, weight=3)
 window.rowconfigure(0, weight=1)
 vfont = Font(family="Vazir", size=16)
+
+# ********************************************************************************** mysql-database  #
+
+class Database:
+    def __init__(self, user, password, host):
+        self.mydb = mysql.connector.connect(user=user, password=password, host=host)
+        self.curser = self.mydb.cursor()
+
+    def create_database(self, database_name):
+        self.curser.execute(f'CREATE DATABASE IF NOT EXISTS {database_name}')
+        self.curser.execute(f'USE {database_name}')
+
+    def create_table(self,table_one,table_two):
+        self.curser.execute(f'CREATE TABLE IF NOT EXISTS {table_one}(ID INT AUTO_INCREMENT PRIMARY KEY,NAME VARCHAR(255) UNIQUE NOT NULL,PRICE INT NOT NULL)')
+        self.curser.execute(f'CREATE TABLE IF NOT EXISTS {table_two}(ID INT AUTO_INCREMENT PRIMARY KEY,RECEIPT_ID INT,MENU_ID INT,COUNT INT,FOREIGN KEY(MENU_ID) REFERENCES {table_one}(ID))')
+
+    def insert_data(self, table_name, data):
+        sql = f'INSERT INTO {table_name}({", ".join(data.keys())}) VALUES({", ".join(["%s" for _ in range(len(data))])})'
+        self.curser.executemany(sql, [tuple(data.values())])
+
+    def commit(self):
+        self.mydb.commit()
+
+    def close(self):
+        self.curser.close()
+        self.mydb.close()
+
+# Usage
+
+db = Database('root', 'admin@1997', 'localhost')
+db.create_database('RESTAURANT')
+db.create_table('MENU', 'RECEIPT')
+db.insert_data('MENU', {'NAME': 'ماهی باکس', 'PRICE': 120000})
+db.insert_data('MENU', {'NAME': 'کباب', 'PRICE': 150000})
+db.insert_data('MENU', {'NAME': 'سوسیس', 'PRICE': 100000})
+db.insert_data('RECEIPT', {'RECEIPT_ID': 1, 'MENU_ID': 1, 'COUNT': 1})
+db.commit()
+db.close()
 
 # ********************************************************************************** صورت حساب #
 
