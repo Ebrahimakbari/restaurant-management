@@ -17,6 +17,13 @@ if __name__ != '__main__':
         def insert_data(self, table_name, data):
             sql = f'INSERT INTO {table_name}({", ".join(data.keys())}) VALUES({", ".join(["%s" for _ in range(len(data))])})'
             self.curser.executemany(sql, [tuple(data.values())])
+            
+        def get_data(self, table_name, condition=None):
+            if condition is None:
+                self.curser.execute(f'SELECT * FROM {table_name}')
+            else:
+                self.curser.execute(f'SELECT * FROM {table_name} WHERE {condition}')
+            return self.curser.fetchall()
 
         def commit(self):
             self.mydb.commit()
