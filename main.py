@@ -21,10 +21,10 @@ db.create_table('MENU', 'RECEIPT')
 db.insert_data('MENU', {'NAME': 'ماهی باکس', 'PRICE': 120000})
 db.insert_data('MENU', {'NAME': 'کباب', 'PRICE': 150000})
 db.insert_data('MENU', {'NAME': 'نوشابه', 'PRICE': 100000,'IS_FOOD':False})
-db.insert_data('RECEIPT', {'RECEIPT_ID': 1, 'MENU_ID': 1, 'COUNT': 1})
 db.commit()
 drinks = db.get_data('MENU','is_food=False')
 foods = db.get_data('MENU','is_food=True')
+max_receipt = db.get_max_receipt('RECEIPT')
 db.close()
 
 # ********************************************************************************** صورت حساب #
@@ -36,6 +36,10 @@ receipt_frame.columnconfigure(0,weight=1)
 
 entry_frame = Entry(receipt_frame,justify='center',width=10,font=vfont)
 entry_frame.grid(row=0,column=0)
+if max_receipt[0][0] == None:
+    max_receipt = 0
+max_receipt += 1
+entry_frame.insert('0',max_receipt)
 
 listbox_frame = Listbox(receipt_frame)
 listbox_frame.grid(row=1,column=0,padx=5,pady=5,sticky='nsew')
@@ -73,7 +77,7 @@ drink_frame.rowconfigure(0,weight=1)
 drink_box = Listbox(drink_frame,font=vfont,justify='center',exportselection=False)
 drink_box.grid(row=0,column=0,sticky='nsew')
 for o in drinks:
-    drink_box.insert('end',o)
+    drink_box.insert('end',o[1])
 drink_box.configure(justify=RIGHT) 
 
 food_frame = LabelFrame(menu_frame,text='غذا ها',font=vfont)
@@ -83,7 +87,7 @@ food_frame.rowconfigure(0,weight=1)
 food_box = Listbox(food_frame,font=vfont,justify='center',exportselection=False)
 food_box.grid(row=0,column=0,sticky='nsew')
 for a in foods:
-    food_box.insert('end',a)
+    food_box.insert('end',a[1])
 food_box.configure(justify=RIGHT)   
 
 # ********************************************************************************** دکمه ها  #

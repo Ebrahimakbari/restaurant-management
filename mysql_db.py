@@ -25,6 +25,10 @@ if __name__ != '__main__':
                 self.curser.execute(f'SELECT * FROM {table_name} WHERE {condition}')
             return self.curser.fetchall()
 
+        def get_max_receipt(self,table_name):
+            self.curser.execute(f'SELECT MAX(RECEIPT_ID) FROM {table_name}')
+            return self.curser.fetchall()
+
         def commit(self):
             self.mydb.commit()
 
