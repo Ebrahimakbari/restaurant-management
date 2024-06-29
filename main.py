@@ -18,6 +18,7 @@ vfont = Font(family="Vazir", size=16)
 db = Database('root', 'admin@1997', 'localhost')
 db.create_database('RESTAURANT')
 db.create_table('MENU', 'RECEIPT')
+db.create_view_menu_receipt()
 db.insert_data('MENU', {'NAME': 'ماهی باکس', 'PRICE': 120000})
 db.insert_data('MENU', {'NAME': 'کباب', 'PRICE': 150000})
 db.insert_data('MENU', {'NAME': 'نوشابه', 'PRICE': 100000,'IS_FOOD':False})
@@ -44,8 +45,14 @@ else:
 max_receipt += 1
 entry_frame.insert('0',max_receipt)
 
-listbox_frame = Listbox(receipt_frame)
+listbox_frame = Listbox(receipt_frame,font=vfont,justify='right')
 listbox_frame.grid(row=1,column=0,padx=5,pady=5,sticky='nsew')
+
+def insert_into_listbox(receipt_id):
+    listbox_frame.delete('0','end')
+    receipts = db.get_from_view(receipt_id)
+    for receipt in receipts:
+        listbox_frame.insert('0',f'{receipt[0]} {receipt[1]} {receipt[2]} {receipt[4]}')
 
 receipt_button = LabelFrame(receipt_frame)
 receipt_button.grid(row=2,column=0,sticky='nsew')
@@ -85,7 +92,6 @@ drink_box.configure(justify=RIGHT)
 def get_drinks(event):
     drinks_item = db.get_item_by_name(drink_box.get(ACTIVE))
     drink_id =drinks_item[0]
-    drink_name = drinks_item[1]
     drink_price = drinks_item[2]
     receipt_id = int(entry_frame.get())
     result = db.get_from_receipt(receipt_id,drink_id)
@@ -93,6 +99,7 @@ def get_drinks(event):
         db.insert_to_receipt(receipt_id,drink_id,1,drink_price)
     else:
         db.increase_count(receipt_id,drink_id)
+    insert_into_listbox(receipt_id)
 
 drink_box.bind('<Double-Button>',get_drinks)
 
@@ -108,7 +115,6 @@ food_box.configure(justify=RIGHT)
 def get_foods(event):
     food_item = db.get_item_by_name(food_box.get(ACTIVE))
     food_id =food_item[0]
-    food_name = food_item[1]
     food_price = food_item[2]
     receipt_id = int(entry_frame.get())
     result = db.get_from_receipt(receipt_id,food_id)
@@ -116,6 +122,7 @@ def get_foods(event):
         db.insert_to_receipt(receipt_id,food_id,1,food_price)
     else:
         db.increase_count(receipt_id,food_id)
+    insert_into_listbox(receipt_id)
 
 food_box.bind('<Double-Button>',get_foods)
 

@@ -47,6 +47,16 @@ if __name__ != '__main__':
         def increase_count(self,receipt_id,menu_id):
             self.curser.execute(f'UPDATE RECEIPT SET COUNT = COUNT + 1 WHERE RECEIPT_ID = {receipt_id} AND MENU_ID = {menu_id}')
             self.mydb.commit()
+            
+        def create_view_menu_receipt(self):
+            self.curser.execute("""CREATE VIEW MENU_RECEIPT AS SELECT
+                                MENU.NAME,MENU.PRICE,RECEIPT.COUNT,RECEIPT.RECEIPT_ID ,RECEIPT.COUNT * MENU.PRICE
+                                AS TOTAL_PRICE FROM MENU INNER JOIN RECEIPT ON MENU.ID = RECEIPT.MENU_ID""")
+            self.mydb.commit()
+
+        def get_from_view(self,receipt_id):
+            self.curser.execute(f'SELECT * FROM MENU_RECEIPT WHERE RECEIPT_ID = {receipt_id}')
+            return self.curser.fetchall()
 
         def close(self):
             self.curser.close()
