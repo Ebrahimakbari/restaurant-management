@@ -28,6 +28,10 @@ if __name__ != '__main__':
         def get_max_receipt(self,table_name):
             self.curser.execute(f'SELECT MAX(RECEIPT_ID) FROM {table_name}')
             return self.curser.fetchall()
+        
+        def get_item_by_name(self,name):
+            self.curser.execute(f'SELECT * FROM MENU WHERE NAME = "{name}"')
+            return self.curser.fetchall()[0]
 
         def commit(self):
             self.mydb.commit()

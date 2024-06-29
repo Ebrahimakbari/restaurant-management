@@ -25,7 +25,7 @@ db.commit()
 drinks = db.get_data('MENU','is_food=False')
 foods = db.get_data('MENU','is_food=True')
 max_receipt = db.get_max_receipt('RECEIPT')
-db.close()
+
 
 # ********************************************************************************** صورت حساب #
 
@@ -78,7 +78,16 @@ drink_box = Listbox(drink_frame,font=vfont,justify='center',exportselection=Fals
 drink_box.grid(row=0,column=0,sticky='nsew')
 for o in drinks:
     drink_box.insert('end',o[1])
-drink_box.configure(justify=RIGHT) 
+drink_box.configure(justify=RIGHT)
+def get_drinks(event):
+    drinks_item = db.get_item_by_name(drink_box.get(ACTIVE))
+    drink_id =drinks_item[0]
+    drink_name = drinks_item[1]
+    drink_price = drinks_item[2]
+    drink_count = drinks_item[3]
+    print(drink_id,drink_name,drink_price,drink_count)
+
+drink_box.bind('<Double-Button>',get_drinks)
 
 food_frame = LabelFrame(menu_frame,text='غذا ها',font=vfont)
 food_frame.grid(row=0,column=1,sticky='nsew')
@@ -89,6 +98,15 @@ food_box.grid(row=0,column=0,sticky='nsew')
 for a in foods:
     food_box.insert('end',a[1])
 food_box.configure(justify=RIGHT)   
+def get_foods(event):
+    food_item = db.get_item_by_name(food_box.get(ACTIVE))
+    food_id =food_item[0]
+    food_name = food_item[1]
+    food_price = food_item[2]
+    food_count = food_item[3]
+    print(food_id,food_name,food_price,food_count)
+
+food_box.bind('<Double-Button>',get_foods)
 
 # ********************************************************************************** دکمه ها  #
 button_frame = LabelFrame(window ,font=vfont,padx=5,pady=5)
@@ -100,3 +118,4 @@ exit_button.grid(row=0,column=0)
 calculate_button = Button(button_frame,text='محاسبه قیمت' ,font=vfont)
 calculate_button.grid(row=0,column=1)
 window.mainloop()
+db.close()
