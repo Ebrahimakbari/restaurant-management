@@ -21,7 +21,7 @@ db.create_table('MENU', 'RECEIPT')
 db.insert_data('MENU', {'NAME': 'ماهی باکس', 'PRICE': 120000})
 db.insert_data('MENU', {'NAME': 'کباب', 'PRICE': 150000})
 db.insert_data('MENU', {'NAME': 'نوشابه', 'PRICE': 100000,'IS_FOOD':False})
-db.commit()
+db.insert_data('MENU', {'NAME': 'دوغ', 'PRICE': 200000,'IS_FOOD':False})
 drinks = db.get_data('MENU','is_food=False')
 foods = db.get_data('MENU','is_food=True')
 max_receipt = db.get_max_receipt('RECEIPT')
@@ -38,6 +38,9 @@ entry_frame = Entry(receipt_frame,justify='center',width=10,font=vfont)
 entry_frame.grid(row=0,column=0)
 if max_receipt[0][0] == None:
     max_receipt = 0
+else:
+    max_receipt = int(max_receipt[0][0])
+    
 max_receipt += 1
 entry_frame.insert('0',max_receipt)
 
@@ -84,8 +87,12 @@ def get_drinks(event):
     drink_id =drinks_item[0]
     drink_name = drinks_item[1]
     drink_price = drinks_item[2]
-    drink_count = drinks_item[3]
-    print(drink_id,drink_name,drink_price,drink_count)
+    receipt_id = int(entry_frame.get())
+    result = db.get_from_receipt(receipt_id,drink_id)
+    if len(result)==0:
+        db.insert_to_receipt(receipt_id,drink_id,1,drink_price)
+    else:
+        db.increase_count(receipt_id,drink_id)
 
 drink_box.bind('<Double-Button>',get_drinks)
 
@@ -103,8 +110,12 @@ def get_foods(event):
     food_id =food_item[0]
     food_name = food_item[1]
     food_price = food_item[2]
-    food_count = food_item[3]
-    print(food_id,food_name,food_price,food_count)
+    receipt_id = int(entry_frame.get())
+    result = db.get_from_receipt(receipt_id,food_id)
+    if len(result)==0:
+        db.insert_to_receipt(receipt_id,food_id,1,food_price)
+    else:
+        db.increase_count(receipt_id,food_id)
 
 food_box.bind('<Double-Button>',get_foods)
 
