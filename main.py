@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter.font import *
 from mysql_db import Database
+from subprocess import call
 
 window = Tk()
 window.title("مدیریت رستوران")
@@ -25,7 +26,6 @@ db.insert_data('MENU', {'NAME': 'نوشابه', 'PRICE': 100000,'IS_FOOD':False}
 db.insert_data('MENU', {'NAME': 'دوغ', 'PRICE': 200000,'IS_FOOD':False})
 drinks = db.get_data('MENU','is_food=False')
 foods = db.get_data('MENU','is_food=True')
-max_receipt = db.get_max_receipt('RECEIPT')
 
 
 # ********************************************************************************** صورت حساب #
@@ -37,22 +37,28 @@ receipt_frame.columnconfigure(0,weight=1)
 
 entry_frame = Entry(receipt_frame,justify='center',width=10,font=vfont)
 entry_frame.grid(row=0,column=0)
+max_receipt = db.get_max_receipt('RECEIPT')
 if max_receipt[0][0] == None:
     max_receipt = 0
 else:
     max_receipt = int(max_receipt[0][0])
     
 max_receipt += 1
-entry_frame.insert('0',max_receipt)
+entry_frame.insert(0,max_receipt)
+
+def entry_event(key):
+    insert_into_listbox(int(key.char))
+
+entry_frame.bind('<Key>',entry_event)
 
 listbox_frame = Listbox(receipt_frame,font=vfont,justify='right')
 listbox_frame.grid(row=1,column=0,padx=5,pady=5,sticky='nsew')
 
 def insert_into_listbox(receipt_id):
-    listbox_frame.delete('0','end')
+    listbox_frame.delete(0,'end')
     receipts = db.get_from_view(receipt_id)
     for receipt in receipts:
-        listbox_frame.insert('0',f'{receipt[0]} {receipt[1]} {receipt[2]} {receipt[4]}')
+        listbox_frame.insert(0,f'{receipt[0]} {receipt[1]} {receipt[2]} {receipt[4]}')
 
 receipt_button = LabelFrame(receipt_frame)
 receipt_button.grid(row=2,column=0,sticky='nsew')
@@ -64,7 +70,18 @@ receipt_button.columnconfigure(3,weight=1)
 
 delete_button = Button(receipt_button,text='حذف صورت حساب',font=vfont)
 delete_button.grid(row=0,column=0,sticky='nsew')
-new_button=Button(receipt_button,text='اضافه کردن صورت حساب',font=vfont)
+
+def add_receipt():
+    entry_frame.delete(0,'end')
+    max_receipt = db.get_max_receipt('RECEIPT')[0][0]
+    if max_receipt == None:
+        max_receipt = 0
+    else:
+        max_receipt = int(max_receipt)
+    max_receipt += 1
+    entry_frame.insert(0,max_receipt)
+
+new_button=Button(receipt_button,text='اضافه کردن صورت حساب',font=vfont,command=add_receipt)
 new_button.grid(row=0,column=1,sticky='nsew')
 add_button = Button(receipt_button,text='+',font=vfont)
 add_button.grid(row=0,column=2,sticky='nsew')
@@ -129,11 +146,15 @@ food_box.bind('<Double-Button>',get_foods)
 # ********************************************************************************** دکمه ها  #
 button_frame = LabelFrame(window ,font=vfont,padx=5,pady=5)
 button_frame.grid(row=1,column=1,padx=5,pady=5)
-
-exit_button = Button(button_frame,text='خروج' ,font=vfont)
+def window_handle():
+    window.destroy()
+    
+exit_button = Button(button_frame,text='خروج' ,font=vfont ,command=window_handle)
 exit_button.grid(row=0,column=0)
-
-calculate_button = Button(button_frame,text='محاسبه قیمت' ,font=vfont)
+def calc():
+    call(['calc.exe'])
+    
+calculate_button = Button(button_frame,text='محاسبه قیمت' ,font=vfont,command=calc)
 calculate_button.grid(row=0,column=1)
 window.mainloop()
 db.close()
