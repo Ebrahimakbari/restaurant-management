@@ -47,9 +47,13 @@ max_receipt += 1
 entry_frame.insert(0,max_receipt)
 
 def entry_event(key):
-    insert_into_listbox(int(key.char))
+    try:
+        receipt = int(entry_frame.get())
+    except:
+        receipt = 0
+    insert_into_listbox(receipt)
 
-entry_frame.bind('<Key>',entry_event)
+entry_frame.bind('<KeyRelease>',entry_event)
 
 listbox_frame = Listbox(receipt_frame,font=vfont,justify='right')
 listbox_frame.grid(row=1,column=0,padx=5,pady=5,sticky='nsew')
@@ -58,7 +62,7 @@ def insert_into_listbox(receipt_id):
     listbox_frame.delete(0,'end')
     receipts = db.get_from_view(receipt_id)
     for receipt in receipts:
-        listbox_frame.insert(0,f'{receipt[0]} {receipt[1]} {receipt[2]} {receipt[4]}')
+        listbox_frame.insert(0,f'{receipt[0]}-{receipt[1]} {receipt[2]} {receipt[4]}')
 
 receipt_button = LabelFrame(receipt_frame)
 receipt_button.grid(row=2,column=0,sticky='nsew')
@@ -67,8 +71,15 @@ receipt_button.columnconfigure(0,weight=1)
 receipt_button.columnconfigure(1,weight=1)
 receipt_button.columnconfigure(2,weight=1)
 receipt_button.columnconfigure(3,weight=1)
-
-delete_button = Button(receipt_button,text='حذف صورت حساب',font=vfont)
+def delete_receipt_item():
+    receipt_id = entry_frame.get()
+    menu_name = listbox_frame.get(listbox_frame.curselection())
+    menu_name = menu_name.split('-')[0]
+    menu_id =  db.get_item_by_name(menu_name)[0]
+    db.delete_from_receipt(receipt_id,menu_id)
+    insert_into_listbox(receipt_id)
+    
+delete_button = Button(receipt_button,text='حذف از صورت حساب',font=vfont ,command=delete_receipt_item)
 delete_button.grid(row=0,column=0,sticky='nsew')
 
 def add_receipt():
@@ -83,9 +94,31 @@ def add_receipt():
 
 new_button=Button(receipt_button,text='اضافه کردن صورت حساب',font=vfont,command=add_receipt)
 new_button.grid(row=0,column=1,sticky='nsew')
-add_button = Button(receipt_button,text='+',font=vfont)
+
+def add_item_to_receipt():
+    menu_name = listbox_frame.get(listbox_frame.curselection())
+    menu_name = menu_name.split('-')[0]
+    menu_id =  db.get_item_by_name(menu_name)[0]
+    receipt_id = entry_frame.get()
+    result = db.get_from_receipt(receipt_id,menu_id)
+    if len(result)==0:
+        db.insert_to_receipt(receipt_id,menu_id,1,result[0][4])
+    else:
+        db.increase_count(receipt_id,menu_id)
+    insert_into_listbox(receipt_id)
+
+add_button = Button(receipt_button,text='+',font=vfont,command=add_item_to_receipt)
 add_button.grid(row=0,column=2,sticky='nsew')
-minus_button=Button(receipt_button,text='-',font=vfont)
+
+def delete_item_from_receipt():
+    receipt_id = entry_frame.get()
+    menu_name = listbox_frame.get(listbox_frame.curselection())
+    menu_name = menu_name.split('-')[0]
+    menu_id =  db.get_item_by_name(menu_name)[0]
+    db.decrease_count(receipt_id,menu_id)
+    insert_into_listbox(receipt_id)
+    
+minus_button=Button(receipt_button,text='-',font=vfont,command=delete_item_from_receipt)
 minus_button.grid(row=0,column=3,sticky='nsew')
 
 # ********************************************************************************** منو محصولات #

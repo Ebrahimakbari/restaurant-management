@@ -47,8 +47,18 @@ if __name__ != '__main__':
         def increase_count(self,receipt_id,menu_id):
             self.curser.execute(f'UPDATE RECEIPT SET COUNT = COUNT + 1 WHERE RECEIPT_ID = {receipt_id} AND MENU_ID = {menu_id}')
             self.mydb.commit()
+
+        def decrease_count(self,receipt_id,menu_id):
+            self.curser.execute(f'UPDATE RECEIPT SET COUNT = COUNT - 1 WHERE RECEIPT_ID = {receipt_id} AND MENU_ID = {menu_id} AND COUNT > 0')
+            self.curser.execute(f'DELETE FROM RECEIPT WHERE RECEIPT_ID = {receipt_id} AND MENU_ID = {menu_id} AND COUNT = 0')
+            self.mydb.commit()
+        
+        def delete_from_receipt(self,receipt_id,menu_id):
+            self.curser.execute(f'DELETE FROM RECEIPT WHERE RECEIPT_ID = {receipt_id} AND MENU_ID = {menu_id}')
+            self.mydb.commit()
             
         def create_view_menu_receipt(self):
+            self.curser.execute('DROP VIEW IF EXISTS MENU_RECEIPT')
             self.curser.execute("""CREATE VIEW MENU_RECEIPT AS SELECT
                                 MENU.NAME,MENU.PRICE,RECEIPT.COUNT,RECEIPT.RECEIPT_ID ,RECEIPT.COUNT * MENU.PRICE
                                 AS TOTAL_PRICE FROM MENU INNER JOIN RECEIPT ON MENU.ID = RECEIPT.MENU_ID""")
