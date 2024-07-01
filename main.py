@@ -38,11 +38,11 @@ receipt_frame.columnconfigure(0, weight=1)
 
 entry_frame = Entry(receipt_frame, justify='center', width=10, font=vfont)
 entry_frame.grid(row=0, column=0)
-max_receipt = db.get_max_receipt('RECEIPT')
-if max_receipt[0][0] == None:
+max_receipt = db.get_max_receipt('RECEIPT')[0][0]
+if max_receipt == None:
     max_receipt = 0
 else:
-    max_receipt = int(max_receipt[0][0])
+    max_receipt = int(max_receipt)
 
 max_receipt += 1
 entry_frame.insert(0, max_receipt)
@@ -95,6 +95,7 @@ delete_button.grid(row=0, column=0, sticky='nsew')
 
 def add_receipt():
     entry_frame.delete(0, 'end')
+    listbox_frame.delete(0,'end')
     max_receipt = db.get_max_receipt('RECEIPT')[0][0]
     if max_receipt == None:
         max_receipt = 0
