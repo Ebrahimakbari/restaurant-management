@@ -12,12 +12,16 @@ if __name__ != '__main__':
             self.mydb.commit()
 
         def create_table(self,table_one,table_two):
-            self.curser.execute(f'CREATE TABLE IF NOT EXISTS {table_one}(ID INT AUTO_INCREMENT PRIMARY KEY,NAME VARCHAR(255) UNIQUE NOT NULL,PRICE INT NOT NULL,IS_FOOD BOOLEAN DEFAULT TRUE)')
-            self.curser.execute(f'CREATE TABLE IF NOT EXISTS {table_two}(ID INT AUTO_INCREMENT PRIMARY KEY,RECEIPT_ID INT,MENU_ID INT,COUNT INT,PRICE INT,FOREIGN KEY(MENU_ID) REFERENCES {table_one}(ID))')
+            self.curser.execute(f"""CREATE TABLE IF NOT EXISTS {table_one}(ID INT AUTO_INCREMENT PRIMARY KEY,
+                                NAME VARCHAR(255) UNIQUE NOT NULL,PRICE INT NOT NULL,IS_FOOD BOOLEAN DEFAULT TRUE)""")
+            self.curser.execute(f"""CREATE TABLE IF NOT EXISTS {table_two}(ID INT AUTO_INCREMENT PRIMARY KEY,
+                                RECEIPT_ID INT,MENU_ID INT,COUNT INT,PRICE INT,FOREIGN KEY(MENU_ID) REFERENCES {table_one}(ID))""")
             self.mydb.commit()
 
         def insert_data(self, table_name, data):
-            sql = f'INSERT INTO {table_name}({", ".join(data.keys())}) VALUES({", ".join(["%s" for _ in range(len(data))])})'
+            sql = f"""INSERT INTO {table_name}({", ".join(data.keys())}) 
+                    VALUES({", ".join(["%s" for _ in range(len(data))])}) 
+                    ON DUPLICATE KEY UPDATE {", ".join([f'{k} = VALUES({k})' for k in data.keys()])}"""
             self.curser.executemany(sql, [tuple(data.values())])
             self.mydb.commit()
             
@@ -37,7 +41,8 @@ if __name__ != '__main__':
             return self.curser.fetchall()[0]
         
         def insert_to_receipt(self,receipt_id,menu_id,count,price):
-            self.curser.execute(f'INSERT INTO RECEIPT(RECEIPT_ID,MENU_ID,COUNT,PRICE) VALUES({receipt_id},{menu_id},{count},{price})')
+            self.curser.execute(f"""INSERT INTO RECEIPT(RECEIPT_ID,MENU_ID,COUNT,PRICE) 
+                                VALUES({receipt_id},{menu_id},{count},{price})""")
             self.mydb.commit()
         
         def get_from_receipt(self,receipt_id,menu_id):
@@ -49,8 +54,10 @@ if __name__ != '__main__':
             self.mydb.commit()
 
         def decrease_count(self,receipt_id,menu_id):
-            self.curser.execute(f'UPDATE RECEIPT SET COUNT = COUNT - 1 WHERE RECEIPT_ID = {receipt_id} AND MENU_ID = {menu_id} AND COUNT > 0')
-            self.curser.execute(f'DELETE FROM RECEIPT WHERE RECEIPT_ID = {receipt_id} AND MENU_ID = {menu_id} AND COUNT = 0')
+            self.curser.execute(f"""UPDATE RECEIPT SET COUNT = COUNT - 1 WHERE 
+                                RECEIPT_ID = {receipt_id} AND MENU_ID = {menu_id} AND COUNT > 0""")
+            self.curser.execute(f"""DELETE FROM RECEIPT WHERE RECEIPT_ID = {receipt_id} 
+                                AND MENU_ID = {menu_id} AND COUNT = 0""")
             self.mydb.commit()
         
         def delete_from_receipt(self,receipt_id,menu_id):
