@@ -162,19 +162,6 @@ for o in drinks:
 drink_box.configure(justify=RIGHT)
 
 
-def get_drinks(event):
-    drinks_item = db.get_item_by_name(drink_box.get(ACTIVE))
-    drink_id = drinks_item[0]
-    drink_price = drinks_item[2]
-    receipt_id = int(entry_frame.get())
-    result = db.get_from_receipt(receipt_id, drink_id)
-    if len(result) == 0:
-        db.insert_to_receipt(receipt_id, drink_id, 1, drink_price)
-    else:
-        db.increase_count(receipt_id, drink_id)
-    insert_into_listbox(receipt_id)
-
-
 def get_products(event, product_box):
     product_item = db.get_item_by_name(product_box.get(ACTIVE))
     product_id = product_item[0]
