@@ -95,7 +95,7 @@ delete_button.grid(row=0, column=0, sticky='nsew')
 
 def add_receipt():
     entry_frame.delete(0, 'end')
-    listbox_frame.delete(0,'end')
+    listbox_frame.delete(0, 'end')
     max_receipt = db.get_max_receipt('RECEIPT')[0][0]
     if max_receipt == None:
         max_receipt = 0
@@ -175,7 +175,21 @@ def get_drinks(event):
     insert_into_listbox(receipt_id)
 
 
-drink_box.bind('<Double-Button>', get_drinks)
+def get_products(event, product_box):
+    product_item = db.get_item_by_name(product_box.get(ACTIVE))
+    product_id = product_item[0]
+    product_price = product_item[2]
+    receipt_id = int(entry_frame.get())
+    result = db.get_from_receipt(receipt_id, product_id)
+    if len(result) == 0:
+        db.insert_to_receipt(receipt_id, product_id, 1, product_price)
+    else:
+        db.increase_count(receipt_id, product_id)
+    insert_into_listbox(receipt_id)
+
+
+drink_box.bind('<Double-Button>',
+                lambda event: get_products(event, product_box=drink_box))
 
 food_frame = LabelFrame(menu_frame, text='غذا ها', font=vfont)
 food_frame.grid(row=0, column=1, sticky='nsew')
@@ -186,23 +200,10 @@ food_box = Listbox(food_frame, font=vfont,
 food_box.grid(row=0, column=0, sticky='nsew')
 for a in foods:
     food_box.insert('end', a[1])
+
 food_box.configure(justify=RIGHT)
-
-
-def get_foods(event):
-    food_item = db.get_item_by_name(food_box.get(ACTIVE))
-    food_id = food_item[0]
-    food_price = food_item[2]
-    receipt_id = int(entry_frame.get())
-    result = db.get_from_receipt(receipt_id, food_id)
-    if len(result) == 0:
-        db.insert_to_receipt(receipt_id, food_id, 1, food_price)
-    else:
-        db.increase_count(receipt_id, food_id)
-    insert_into_listbox(receipt_id)
-
-
-food_box.bind('<Double-Button>', get_foods)
+food_box.bind('<Double-Button>',
+                lambda event: get_products(event, product_box=food_box))
 
 # ********************************************************************************** دکمه ها  #
 button_frame = LabelFrame(window, font=vfont, padx=5, pady=5)
@@ -214,7 +215,7 @@ def window_handle():
 
 
 exit_button = Button(button_frame, text='خروج',
-                        font=vfont, command=window_handle)
+                    font=vfont, command=window_handle)
 exit_button.grid(row=0, column=0)
 
 
